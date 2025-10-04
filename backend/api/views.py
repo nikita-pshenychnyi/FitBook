@@ -4,3 +4,5 @@ from django.http import HttpResponse
 def home(request):
     return HttpResponse('<h1>API Home Page</h1>')
 
+def about(request):
+    return HttpResponse('<h1>About API Home Page</h1>')
