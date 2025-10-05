@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def authorization(request):
-    return render(request, 'index.html')
+    return render(request, 'index.html', {})
 
 
 def about(requence):
