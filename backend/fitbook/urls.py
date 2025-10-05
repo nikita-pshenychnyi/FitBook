@@ -24,11 +24,13 @@ urlpatterns = [
     
     
     
-    path('', views.home, name='home-page'),
+    path('', views.authorization, name='authorization-page'),
 
     
     path('about/', views.about, name='about-page'),
+
+    path('api/', include('api.urls'))
     
    
-    path('api/', include('api.urls')),
+
 ]

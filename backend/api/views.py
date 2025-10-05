@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-def home(request):
-    return HttpResponse('<h1>API Home Page</h1>')
+def authorization(request):
+    return render(request, 'index.html')
 
-def about(request):
-    return HttpResponse('<h1>About API Home Page</h1>')
+
+def about(requence):
+    return HttpResponse("<h1>About API<h1>")
