@@ -1,31 +1,18 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitBook - Вхід та Реєстрація</title>
-    <!-- Підключення Tailwind CSS для стилів -->
+    <!-- Підключення Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Підключення шрифту Inter з Google Fonts -->
+    <!-- Підключення шрифту Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Застосовуємо шрифт Inter до всього документа */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Стиль для активної вкладки */
-        .tab-active {
-            border-bottom-color: #4f46e5; /* indigo-600 */
-            color: #111827; /* gray-900 */
-        }
-        /* Стиль для неактивної вкладки */
-        .tab-inactive {
-            border-bottom-color: transparent;
-            color: #6b7280; /* gray-500 */
-        }
-    </style>
+    <!-- Підключення нашого власного файлу стилів -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
     <div class="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
@@ -34,6 +21,17 @@
             <h1 class="text-4xl font-bold tracking-tight text-gray-900">FitBook</h1>
             <p class="mt-2 text-gray-600">Знайди свою ідеальну секцію в місті</p>
         </div>
+
+        <!-- Блок для відображення сповіщень від Django -->
+        {% if messages %}
+            <div class="space-y-2">
+                {% for message in messages %}
+                    <div class="p-4 rounded-md {% if message.tags == 'success' %} bg-green-100 text-green-800 {% else %} bg-red-100 text-red-800 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <!-- Перемикачі вкладок -->
         <div class="flex border-b border-gray-200">
@@ -46,7 +44,8 @@
         </div>
 
         <!-- Форма входу -->
-        <form id="login-form" class="mt-8 space-y-6" action="#" method="POST">
+        <form id="login-form" class="mt-8 space-y-6" action="{% url 'login' %}" method="POST">
+             {% csrf_token %}
             <div>
                 <label for="login-email" class="sr-only">Email</label>
                 <input id="login-email" name="email" type="email" autocomplete="email" required class="relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Електронна пошта">
@@ -64,10 +63,15 @@
         </form>
 
         <!-- Форма реєстрації (прихована за замовчуванням) -->
-        <form id="register-form" class="hidden mt-8 space-y-6" action="#" method="POST">
+        <form id="register-form" class="hidden mt-8 space-y-6" action="{% url 'register' %}" method="POST">
+            {% csrf_token %}
             <div>
                 <label for="register-name" class="sr-only">Ім'я</label>
                 <input id="register-name" name="name" type="text" required class="relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ваше ім'я">
+            </div>
+            <div>
+                <label for="register-surname" class="sr-only">Прізвище</label>
+                <input id="register-surname" name="surname" type="text" required class="relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Ваше прізвище">
             </div>
             <div>
                 <label for="register-email" class="sr-only">Email</label>
@@ -130,3 +134,4 @@
     </script>
 </body>
 </html>
+

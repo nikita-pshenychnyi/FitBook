@@ -1,37 +1,22 @@
-"""
-URL configuration for fitbook project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
 from api import views
-import debug_toolbar
 
 urlpatterns = [
-    
     path('admin/', admin.site.urls),
-    
-    path('_debug_/', include(debug_toolbar.urls)),
-    
+    path('__debug__/', include('debug_toolbar.urls')),
+
+    # Сторінка входу/реєстрації (головна для гостей)
     path('', views.authorization, name='authorization-page'),
 
-    
-    path('about/', views.about, name='about-page'),
+    # Маршрути для обробки даних з форм
+    path('register/', views.register_user, name='register'),
+    path('login/', views.login_user, name='login'),
+    path('logout/', views.logout_user, name='logout'),
 
-    path('api/', include('api.urls'))
-    
-   
+    # Новий маршрут для головної сторінки (для залогінених)
+    path('home/', views.home_page, name='home-page'),
 
+    # Залишаємо для майбутнього API, поки не використовуємо
+    # path('api/', include('api.urls')),
 ]
