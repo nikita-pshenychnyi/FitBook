@@ -1,25 +1,24 @@
-/* Застосовуємо шрифт Inter до всього документа */
+
 body {
     font-family: 'Inter', sans-serif;
 }
 
-/* Стиль для активної вкладки */
+
 .tab-active {
-    border-bottom-color: #4f46e5; /* indigo-600 */
-    color: #111827; /* gray-900 */
-    transition: all 0.2s ease-in-out; /* Додаємо плавний перехід */
+    border-bottom-color: #4f46e5;
+    color: #111827; 
+    transition: all 0.2s ease-in-out; 
 }
 
-/* Стиль для неактивної вкладки */
+
 .tab-inactive {
     border-bottom-color: transparent;
-    color: #6b7280; /* gray-500 */
-    transition: all 0.2s ease-in-out; /* Додаємо плавний перехід */
+    color: #6b7280; 
+    transition: all 0.2s ease-in-out; 
 }
 
-/* === ДОДАНО АНІМАЦІЮ ПРИ НАВЕДЕННІ === */
-/* Коли курсор наводиться на неактивну вкладку, вона плавно змінює колір */
+
 .tab-inactive:hover {
-    color: #374151; /* gray-700 */
-    border-bottom-color: #d1d5db; /* gray-300 */
+    color: #374151; 
+    border-bottom-color: #d1d5db; 
 }

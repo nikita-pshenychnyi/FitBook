@@ -1,23 +1,27 @@
+# api/views.py
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-# Імпортуємо декоратор, який буде перевіряти, чи залогінений користувач
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required # <-- (1) Поки що не потрібно
 
-# Сторінка входу/реєстрації
+# (!!!) 1. Імпортуй свої моделі, щоб отримати до них доступ
+from .models import Trainer, Section 
+
+#
+# --- ТВОЯ ЛОГІКА АВТЕНТИФІКАЦІЇ (ТУТ ВСЕ ПРАВИЛЬНО) ---
+#
+
 def authorization(request):
-    # Якщо користувач вже залогінений, перенаправляємо його на головну
     if request.user.is_authenticated:
         return redirect('home-page')
     return render(request, 'index.html')
 
-# Сторінка "Про нас" (залишаємо для прикладу)
 def about(request):
     return HttpResponse("<h1>About Page</h1>")
 
-# Функція реєстрації
 def register_user(request):
     if request.method == 'POST':
         first_name = request.POST.get('name')
@@ -35,7 +39,7 @@ def register_user(request):
             return redirect('authorization-page')
         
         user = User.objects.create_user(
-            username=email, # Використовуємо email як унікальний username
+            username=email,
             email=email,
             password=password,
             first_name=first_name,
@@ -43,15 +47,12 @@ def register_user(request):
         )
         user.save()
 
-        # Автоматично логінимо користувача після реєстрації
         login(request, user)
         messages.success(request, f'Вітаємо, {user.first_name}!')
-        # Перенаправляємо на нову головну сторінку
         return redirect('home-page')
     else:
         return redirect('authorization-page')
 
-# Функція входу
 def login_user(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -62,7 +63,6 @@ def login_user(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'З поверненням, {user.first_name}!')
-            # Перенаправляємо на нову головну сторінку
             return redirect('home-page') 
         else:
             messages.error(request, 'Неправильний email або пароль.')
@@ -70,14 +70,30 @@ def login_user(request):
     else:
         return redirect('authorization-page')
 
-# Нова функція виходу
 def logout_user(request):
     logout(request)
     messages.info(request, 'Ви вийшли з системи.')
     return redirect('authorization-page')
 
 
-# Нова головна сторінка сайту (тільки для залогінених)
-@login_required(login_url='authorization-page')
+#
+# --- ГОЛОВНА СТОРІНКА (Ось зміни) ---
+#
+
+# (1) Я прибрав @login_required. Тепер сторінку бачать ВСІ.
 def home_page(request):
-    return render(request, 'home.html')
+    
+    # (2) Отримуємо ВСІХ тренерів з бази даних
+    trainers = Trainer.objects.all()
+    
+    # (3) Отримуємо ВСІ секції (для майбутніх фільтрів)
+    sections = Section.objects.all()
+
+    # (4) Створюємо "контекст" - словник, який поїде в HTML
+    context = {
+        'trainers_list': trainers,   # <-- Передаємо список тренерів
+        'sections_list': sections,  # <-- Передаємо список секцій
+    }
+    
+    # (5) Відмальовуємо 'home.html' і передаємо туди context
+    return render(request, 'home.html', context)

@@ -15,7 +15,6 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- Навігаційна панель -->
     <nav class="bg-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -23,22 +22,68 @@
                     <h1 class="text-2xl font-bold text-indigo-600">FitBook</h1>
                 </div>
                 <div class="flex items-center">
-                    <span class="text-gray-700 mr-4">Привіт, {{ user.first_name|default:user.username }}!</span>
-                    <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                        Вийти
-                    </a>
+                    {% if user.is_authenticated %}
+                        <span class="text-gray-700 mr-4">Привіт, {{ user.first_name|default:user.username }}!</span>
+                        <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                            Вийти
+                        </a>
+                    {% else %}
+                         <a href="{% url 'authorization-page' %}" class="px-3 py-2 rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                            Увійти
+                        </a>
+                         <a href="{% url 'authorization-page' %}" class="ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                            Реєстрація
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Основний контент -->
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 py-6 sm:px-0">
-            <div class="border-4 border-dashed border-gray-200 rounded-lg h-96 p-8 text-center">
-                <h2 class="text-2xl font-semibold text-gray-800">Головна сторінка</h2>
-                <p class="mt-2 text-gray-600">Тут буде список секцій та інший контент.</p>
+
+            <div class="mb-6 p-4 bg-white rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Оберіть секцію:</h3>
+                <div class="flex flex-wrap gap-2">
+                    
+                    <a href="{% url 'home-page' %}" class="px-4 py-2 bg-indigo-600 text-white rounded-full font-medium text-sm hover:bg-indigo-700">
+                        Всі секції
+                    </a>
+
+                    {% for section in sections_list %}
+                        <a href="?section={{ section.id }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-full font-medium text-sm hover:bg-gray-300">
+                            {{ section.name }}
+                        </a>
+                    {% endfor %}
+                </div>
             </div>
+
+            <div class="space-y-6">
+                
+                {% for trainer in trainers_list %}
+                <div class="bg-white shadow-md rounded-lg p-6">
+                    <h4 class="text-2xl font-bold text-gray-900">{{ trainer.user.get_full_name }}</h4>
+                    <p class="mt-2 text-gray-700"><strong>Анкета:</strong> {{ trainer.specialization }}</p>
+                    <p class="mt-4 text-xl font-semibold text-indigo-600">{{ trainer.price_per_session }} грн / заняття</p>
+                    
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <span class="text-gray-600 font-medium">Секції:</span>
+                        {% for sec in trainer.sections.all %}
+                        <span class="px-3 py-1 bg-gray-200 text-gray-800 rounded-full font-medium text-sm">
+                            #{{ sec.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {% empty %}
+                <div class="bg-white shadow-md rounded-lg p-6 text-center">
+                    <p class="text-gray-600">На жаль, тренери ще не додані до системи. Будь ласка, додайте їх через адмін-панель.</p>
+                </div>
+                
+                {% endfor %} </div>
+
         </div>
     </main>
 
