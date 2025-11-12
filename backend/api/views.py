@@ -1,18 +1,18 @@
-# api/views.py
+
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.decorators import login_required # <-- (1) Поки що не потрібно
 
-# (!!!) 1. Імпортуй свої моделі, щоб отримати до них доступ
+
+from django.contrib.auth.decorators import login_required 
+
+
 from .models import Trainer, Section 
 
-#
-# --- ТВОЯ ЛОГІКА АВТЕНТИФІКАЦІЇ (ТУТ ВСЕ ПРАВИЛЬНО) ---
-#
+
 
 def authorization(request):
     if request.user.is_authenticated:
@@ -76,24 +76,31 @@ def logout_user(request):
     return redirect('authorization-page')
 
 
-#
-# --- ГОЛОВНА СТОРІНКА (Ось зміни) ---
-#
 
-# (1) Я прибрав @login_required. Тепер сторінку бачать ВСІ.
+
+@login_required(login_url='authorization-page')
 def home_page(request):
     
-    # (2) Отримуємо ВСІХ тренерів з бази даних
-    trainers = Trainer.objects.all()
     
-    # (3) Отримуємо ВСІ секції (для майбутніх фільтрів)
     sections = Section.objects.all()
+    
+   
+    section_id = request.GET.get('section')
 
-    # (4) Створюємо "контекст" - словник, який поїде в HTML
+   
+    if section_id:
+       
+        trainers = Trainer.objects.filter(sections__id=section_id)
+    
+    else:
+        
+        trainers = Trainer.objects.all()
+
+   
     context = {
-        'trainers_list': trainers,   # <-- Передаємо список тренерів
-        'sections_list': sections,  # <-- Передаємо список секцій
+        'trainers_list': trainers,   
+        'sections_list': sections, 
     }
     
-    # (5) Відмальовуємо 'home.html' і передаємо туди context
+    
     return render(request, 'home.html', context)

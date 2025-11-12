@@ -7,22 +7,29 @@ class Section(models.Model):
     description = models.TextField(verbose_name="Опис", blank=True, null=True)
 
     def __str__(self):
-        
         return self.name
 
 
 class Trainer(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    
-   
     sections = models.ManyToManyField(Section, verbose_name="Секції, які веде тренер")
     
-    specialization = models.CharField(max_length=100, verbose_name="Спеціалізація")
+    
+    specialization = models.CharField(max_length=255, verbose_name="Спеціалізація") 
+    
     price_per_session = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Ціна за заняття")
 
+  
+    photo = models.ImageField(
+        upload_to="trainers/", 
+        null=True, 
+        blank=True, 
+        verbose_name="Фото"
+    )
+   
+
     def __str__(self):
-        
         return self.user.get_full_name() or self.user.username
 
 
@@ -34,12 +41,8 @@ class Booking(models.Model):
         ('cancelled', 'Скасовано'),
     ]
 
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Користувач")
-    
-   
     trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE, verbose_name="Тренер")
-    
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name="Статус заявки")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
