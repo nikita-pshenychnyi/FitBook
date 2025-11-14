@@ -1,10 +1,6 @@
-
-
 from django.contrib import admin
 from django.urls import path, include
 from api import views
-
-
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -17,8 +13,8 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('home/', views.home_page, name='home-page'),
     path('profile/', views.profile_page, name='profile_page'),
-    path('book/<int:pk>/', views.book_trainer, name='book_trainer'),
-
+    path('book/trainer/<int:pk>/', views.booking_page, name='booking_page'),
+    path('booking/delete/<int:pk>/', views.delete_booking, name='delete_booking'),
 ]
 
 

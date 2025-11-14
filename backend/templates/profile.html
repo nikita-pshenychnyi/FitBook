@@ -13,27 +13,21 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-100">
-
-    <nav class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<body class="bg-gray-900 text-gray-300"> <nav class="bg-gray-800 shadow-lg"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="{% url 'home-page' %}" class="text-2xl font-bold text-indigo-600">FitBook</a>
-                </div>
+                    <a href="{% url 'home-page' %}" class="text-2xl font-bold text-orange-500">FitBook</a> </div>
                 <div class="flex items-center">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'profile_page' %}" class="text-gray-700 mr-4 hover:text-indigo-600">
-                            Мій профіль ({{ user.first_name }})
+                        <a href="{% url 'profile_page' %}" class="text-gray-300 mr-4 hover:text-orange-500"> Мій профіль ({{ user.first_name|default:user.username }})
                         </a>
-                        <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                            Вийти
+                        <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600"> Вийти
                         </a>
                     {% else %}
-                         <a href="{% url 'authorization-page' %}" class="px-3 py-2 rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                         <a href="{% url 'authorization-page' %}" class="px-3 py-2 rounded-md text-sm font-medium text-orange-500 hover:text-orange-600">
                             Увійти
                         </a>
-                         <a href="{% url 'authorization-page' %}" class="ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                         <a href="{% url 'authorization-page' %}" class="ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600">
                             Реєстрація
                         </a>
                     {% endif %}
@@ -44,43 +38,47 @@
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 py-6 sm:px-0">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">Мої заявки</h2>
-            
-            <div class="space-y-4">
+            <h2 class="text-3xl font-bold text-white mb-6">Мої заявки</h2> <div class="space-y-4">
                 {% for booking in bookings %}
-                    <div class="bg-white shadow-md rounded-lg p-6 flex items-center justify-between">
-                        <div>
-                            <p class="text-lg font-semibold text-gray-900">
-                                Заявка до: 
-                                <span class="text-indigo-600">{{ booking.trainer.user.get_full_name }}</span>
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                Подано: {{ booking.created_at|date:"d M Y, H:i" }}
+                    <div class="bg-gray-800 shadow-lg rounded-lg p-6 flex items-center justify-between"> <div>
+                            <p class="text-lg font-semibold text-white"> Заявка до: 
+                                <span class="text-orange-500">{{ booking.trainer.user.get_full_name }}</span> </p>
+                            
+                            {% if booking.booking_date and booking.booking_time %}
+                                <p class="text-md font-semibold text-green-400 mt-1"> Призначено на: {{ booking.booking_date|date:"d.m.Y" }} ({{ booking.booking_time|time:"H:i" }})
+                                </p>
+                            {% else %}
+                                <p class="text-sm text-gray-400 mt-1"> Дата і час ще не призначені адміном
+                                </p>
+                            {% endif %}
+
+                            <p class="text-sm text-gray-400 mt-2"> Подано: {{ booking.created_at|date:"d M Y, H:i" }}
                             </p>
                             <div class="mt-2 flex flex-wrap gap-2">
                                 {% for sec in booking.trainer.sections.all %}
-                                <span class="px-3 py-1 bg-gray-200 text-gray-800 rounded-full font-medium text-sm">
-                                    #{{ sec.name }}
+                                <span class="px-3 py-1 bg-gray-700 text-gray-200 rounded-full font-medium text-sm"> #{{ sec.name }}
                                 </span>
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right flex flex-col items-end gap-y-2">
                             <span class="px-4 py-2 rounded-full font-semibold text-sm
-                                {% if booking.status == 'pending' %} bg-yellow-100 text-yellow-800 {% endif %}
-                                {% if booking.status == 'confirmed' %} bg-green-100 text-green-800 {% endif %}
-                                {% if booking.status == 'cancelled' %} bg-red-100 text-red-800 {% endif %}">
+                                {% if booking.status == 'pending' %} bg-yellow-900 bg-opacity-70 text-yellow-300 {% endif %}
+                                {% if booking.status == 'confirmed' %} bg-green-900 bg-opacity-70 text-green-300 {% endif %}
+                                {% if booking.status == 'cancelled' %} bg-red-900 bg-opacity-70 text-red-300 {% endif %}">
                                 {{ booking.get_status_display }}
                             </span>
+                            <a href="{% url 'delete_booking' booking.pk %}"
+                               class="px-4 py-1 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700"
+                               onclick="return confirm('Ви впевнені, що хочете скасувати цю заявку?');">
+                                Скасувати
+                            </a>
                         </div>
                     </div>
                 {% empty %}
-                    <div class="bg-white shadow-md rounded-lg p-6 text-center">
-                        <p class="text-gray-600">У вас ще немає жодної заявки. Ви можете створити її на <a href="{% url 'home-page' %}" class="text-indigo-600 hover:underline">головній сторінці</a>.</p>
-                    </div>
+                    <div class="bg-gray-800 shadow-lg rounded-lg p-6 text-center"> <p class="text-gray-400">У вас ще немає жодної заявки. Ви можете створити її на <a href="{% url 'home-page' %}" class="text-orange-500 hover:underline">головній сторінці</a>.</p> </div>
                 {% endfor %}
             </div>
-            
         </div>
     </main>
 
