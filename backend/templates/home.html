@@ -13,20 +13,28 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-300"> <nav class="bg-gray-800 shadow-lg"> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<body class="bg-gray-900 text-gray-300">
+
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="{% url 'home-page' %}" class="text-2xl font-bold text-orange-500">FitBook</a> </div>
+                    <a href="{% url 'home-page' %}" class="text-2xl font-bold text-orange-500">FitBook</a>
+                </div>
                 <div class="flex items-center">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'profile_page' %}" class="text-gray-300 mr-4 hover:text-orange-500"> Мій профіль ({{ user.first_name|default:user.username }})
+                        <a href="{% url 'profile_page' %}" class="text-gray-300 mr-4 hover:text-orange-500">
+                            Мій профіль ({{ user.first_name|default:user.username }})
                         </a>
-                        <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600"> Вийти
+                        <a href="{% url 'logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600">
+                            Вийти
                         </a>
                     {% else %}
-                         <a href="{% url 'authorization-page' %}" class="px-3 py-2 rounded-md text-sm font-medium text-orange-500 hover:text-orange-600"> Увійти
+                         <a href="{% url 'authorization-page' %}" class="px-3 py-2 rounded-md text-sm font-medium text-orange-500 hover:text-orange-600">
+                            Увійти
                         </a>
-                         <a href="{% url 'authorization-page' %}" class="ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600"> Реєстрація
+                         <a href="{% url 'authorization-page' %}" class="ml-2 px-3 py-2 rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600">
+                            Реєстрація
                         </a>
                     {% endif %}
                 </div>
@@ -54,7 +62,9 @@
             <div class="flex flex-col md:flex-row gap-6">
 
                 <aside class="md:w-1/4">
-                    <div class="p-4 bg-gray-800 rounded-lg shadow-lg sticky top-6"> <h3 class="text-lg font-semibold text-white mb-3">Оберіть секцію:</h3> <div class="flex flex-col space-y-2">
+                    <div class="p-4 bg-gray-800 rounded-lg shadow-lg sticky top-6">
+                        <h3 class="text-lg font-semibold text-white mb-3">Оберіть секцію:</h3>
+                        <div class="flex flex-col space-y-2">
                             
                             {% if active_section_id is None %}
                                 <a href="{% url 'home-page' %}" class="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600 text-center">
@@ -84,29 +94,42 @@
                 <section class="md:w-3/4">
                     <div class="space-y-6">
                         {% for trainer in trainers_list %}
-                        <div class="bg-gray-800 shadow-lg rounded-lg p-6"> {% if trainer.photo %}
+                        <div class="bg-gray-800 shadow-lg rounded-lg p-6">
+                            
+                            {% if trainer.photo %}
                                 <img src="{{ trainer.photo.url }}" 
                                      alt="{{ trainer.user.get_full_name }}" 
-                                     class="w-32 h-32 rounded-lg mx-auto mb-4 object-cover border-4 border-orange-800"> {% else %}
-                                <div class="w-32 h-32 rounded-lg mx-auto mb-4 bg-gray-700 flex items-center justify-center border-4 border-orange-800"> <span class="text-gray-400">Немає фото</span> </div>
+                                     class="w-32 h-32 rounded-lg mx-auto mb-4 object-cover border-4 border-orange-800">
+                            {% else %}
+                                <div class="w-32 h-32 rounded-lg mx-auto mb-4 bg-gray-700 flex items-center justify-center border-4 border-orange-800">
+                                     <span class="text-gray-400">Немає фото</span>
+                                </div>
                             {% endif %}
 
-                            <h4 class="text-2xl font-bold text-white text-center">{{ trainer.user.get_full_name }}</h4> <p class="mt-2 text-gray-300 text-center"><strong>Анкета:</strong> {{ trainer.specialization }}</p> <p class="mt-4 text-xl font-semibold text-orange-500 text-center">{{ trainer.price_per_session }} грн / заняття</p> <div class="mt-6 text-center">
+                            <h4 class="text-2xl font-bold text-white text-center">{{ trainer.user.get_full_name }}</h4>
+                            <p class="mt-2 text-gray-300 text-center"><strong>Анкета:</strong> {{ trainer.specialization }}</p>
+                            <p class="mt-4 text-xl font-semibold text-orange-500 text-center">{{ trainer.price_per_session }} грн / заняття</p>
+                            
+                            <div class="mt-6 text-center">
                                 <a href="{% url 'booking_page' trainer.pk %}" 
-                                   class="px-6 py-2 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600"> Записатись
+                                   class="px-6 py-2 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600">
+                                    Записатись
                                 </a>
                             </div>
 
                             <div class="mt-4 flex flex-wrap gap-2 justify-center">
-                                <span class="text-gray-400 font-medium">Секції:</span> {% for sec in trainer.sections.all %}
-                                <span class="px-3 py-1 bg-gray-700 text-gray-200 rounded-full font-medium text-sm"> #{{ sec.name }}
+                                {% if trainer.section %} <span class="text-gray-400 font-medium">Секція:</span>
+                                <span class="px-3 py-1 bg-gray-700 text-gray-200 rounded-full font-medium text-sm">
+                                    #{{ trainer.section.name }}
                                 </span>
-                                {% endfor %}
+                                {% endif %}
                             </div>
                         </div>
                         
                         {% empty %}
-                        <div class="bg-gray-800 shadow-lg rounded-lg p-6 text-center"> <p class="text-gray-400">За цією секцією тренерів не знайдено, або їх ще не додали до системи.</p> </div>
+                        <div class="bg-gray-800 shadow-lg rounded-lg p-6 text-center">
+                            <p class="text-gray-400">За цією секцією тренерів не знайдено, або їх ще не додали до системи.</p>
+                        </div>
                         
                         {% endfor %} 
                     </div>

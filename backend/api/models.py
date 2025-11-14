@@ -13,7 +13,16 @@ class Section(models.Model):
 class Trainer(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    sections = models.ManyToManyField(Section, verbose_name="Секції, які веде тренер")
+    
+  
+    section = models.ForeignKey(
+        Section, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name="Секція"
+    )
+ 
     
     specialization = models.CharField(max_length=255, verbose_name="Спеціалізація") 
     price_per_session = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Ціна за заняття")
@@ -30,20 +39,16 @@ class Trainer(models.Model):
 
 
 class Booking(models.Model):
-    """Модель для заявки на тренування."""
     STATUS_CHOICES = [
         ('pending', 'В очікуванні'),
         ('confirmed', 'Підтверджено'),
         ('cancelled', 'Скасовано'),
     ]
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Користувач")
     trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE, verbose_name="Тренер")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name="Статус заявки")
     booking_date = models.DateField(verbose_name="Дата заняття")
     booking_time = models.TimeField(verbose_name="Час заняття")
-  
-
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
     def __str__(self):
