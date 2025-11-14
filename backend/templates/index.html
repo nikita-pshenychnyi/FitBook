@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitBook - Вхід та Реєстрація</title>
-    <!-- Підключення Tailwind CSS -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Підключення шрифту Inter -->
+  
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Підключення нашого власного файлу стилів -->
+  
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="bg-gray-50 flex items-center justify-center min-h-screen">
@@ -22,7 +22,7 @@
             <p class="mt-2 text-gray-600">Знайди свою ідеальну секцію в місті</p>
         </div>
 
-        <!-- Блок для відображення сповіщень від Django -->
+     
         {% if messages %}
             <div class="space-y-2">
                 {% for message in messages %}
@@ -33,7 +33,7 @@
             </div>
         {% endif %}
 
-        <!-- Перемикачі вкладок -->
+        
         <div class="flex border-b border-gray-200">
             <button id="login-tab" class="flex-1 py-4 text-center font-semibold border-b-2 tab-active transition">
                 Вхід
@@ -43,7 +43,7 @@
             </button>
         </div>
 
-        <!-- Форма входу -->
+        
         <form id="login-form" class="mt-8 space-y-6" action="{% url 'login' %}" method="POST">
              {% csrf_token %}
             <div>
@@ -62,7 +62,7 @@
             </div>
         </form>
 
-        <!-- Форма реєстрації (прихована за замовчуванням) -->
+       
         <form id="register-form" class="hidden mt-8 space-y-6" action="{% url 'register' %}" method="POST">
             {% csrf_token %}
             <div>
@@ -96,39 +96,39 @@
     </div>
 
     <script>
-        // Отримуємо доступ до елементів DOM
+       
         const loginTab = document.getElementById('login-tab');
         const registerTab = document.getElementById('register-tab');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
 
-        // Обробник кліку на вкладку "Вхід"
+       
         loginTab.addEventListener('click', () => {
-            // Робимо вкладку входу активною
+          
             loginTab.classList.add('tab-active');
             loginTab.classList.remove('tab-inactive');
-            // Робимо вкладку реєстрації неактивною
+            
             registerTab.classList.add('tab-inactive');
             registerTab.classList.remove('tab-active');
 
-            // Показуємо форму входу
+            
             loginForm.classList.remove('hidden');
-            // Приховуємо форму реєстрації
+            
             registerForm.classList.add('hidden');
         });
 
-        // Обробник кліку на вкладку "Реєстрація"
+        
         registerTab.addEventListener('click', () => {
-            // Робимо вкладку реєстрації активною
+            
             registerTab.classList.add('tab-active');
             registerTab.classList.remove('tab-inactive');
-            // Робимо вкладку входу неактивною
+            
             loginTab.classList.add('tab-inactive');
             loginTab.classList.remove('tab-active');
 
-            // Показуємо форму реєстрації
+            
             registerForm.classList.remove('hidden');
-            // Приховуємо форму входу
+            
             loginForm.classList.add('hidden');
         });
     </script>

@@ -5,14 +5,10 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-
-
 from django.contrib.auth.decorators import login_required 
 
 
-from .models import Trainer, Section 
-
-
+from .models import Trainer, Section, Booking 
 
 def authorization(request):
     if request.user.is_authenticated:
@@ -77,30 +73,54 @@ def logout_user(request):
 
 
 
-
 @login_required(login_url='authorization-page')
 def home_page(request):
     
-    
     sections = Section.objects.all()
+    section_id = request.GET.get('section') 
     
    
-    section_id = request.GET.get('section')
+    active_section_id = None 
 
-   
     if section_id:
-       
         trainers = Trainer.objects.filter(sections__id=section_id)
-    
+        try:
+            
+            active_section_id = int(section_id) 
+        except ValueError:
+            pass 
     else:
-        
         trainers = Trainer.objects.all()
+       
 
-   
     context = {
-        'trainers_list': trainers,   
-        'sections_list': sections, 
+        'trainers_list': trainers,
+        'sections_list': sections,
+        'active_section_id': active_section_id 
     }
     
-    
     return render(request, 'home.html', context)
+
+
+
+@login_required(login_url='authorization-page')
+def book_trainer(request, pk):
+   
+    try:
+        trainer_to_book = Trainer.objects.get(pk=pk)
+    except Trainer.DoesNotExist:
+        messages.error(request, 'Такого тренера не існує.')
+        return redirect('home-page')
+
+    
+    client_user = request.user
+
+   
+    Booking.objects.create(
+        user=client_user,
+        trainer=trainer_to_book
+    )
+
+    
+    messages.success(request, f'Вашу заявку до тренера {trainer_to_book.user.get_full_name()} прийнято!')
+    return redirect('home-page')
