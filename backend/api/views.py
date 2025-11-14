@@ -124,3 +124,16 @@ def book_trainer(request, pk):
     
     messages.success(request, f'Вашу заявку до тренера {trainer_to_book.user.get_full_name()} прийнято!')
     return redirect('home-page')
+
+@login_required(login_url='authorization-page')
+def profile_page(request):
+    
+    
+    my_bookings = Booking.objects.filter(user=request.user).order_by('-created_at')
+
+    
+    context = {
+        'bookings': my_bookings
+    }
+    
+    return render(request, 'profile.html', context)

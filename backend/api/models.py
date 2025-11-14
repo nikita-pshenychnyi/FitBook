@@ -15,12 +15,9 @@ class Trainer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     sections = models.ManyToManyField(Section, verbose_name="Секції, які веде тренер")
     
-    
     specialization = models.CharField(max_length=255, verbose_name="Спеціалізація") 
-    
     price_per_session = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Ціна за заняття")
 
-  
     photo = models.ImageField(
         upload_to="trainers/", 
         null=True, 
@@ -28,13 +25,12 @@ class Trainer(models.Model):
         verbose_name="Фото"
     )
    
-
     def __str__(self):
         return self.user.get_full_name() or self.user.username
 
 
 class Booking(models.Model):
-    """Модель для заявки на тренування (спрощене бронювання)."""
+    """Модель для заявки на тренування."""
     STATUS_CHOICES = [
         ('pending', 'В очікуванні'),
         ('confirmed', 'Підтверджено'),
@@ -44,6 +40,10 @@ class Booking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Користувач")
     trainer = models.ForeignKey(Trainer, on_delete=models.CASCADE, verbose_name="Тренер")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', verbose_name="Статус заявки")
+    booking_date = models.DateField(verbose_name="Дата заняття")
+    booking_time = models.TimeField(verbose_name="Час заняття")
+  
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
     def __str__(self):
