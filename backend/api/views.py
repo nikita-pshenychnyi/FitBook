@@ -1,9 +1,16 @@
+import io
+from django.http import FileResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required 
+from django.db.models import Q, Count, Sum, Avg  # <--- Додано нові імпорти для статистики та пошуку
 
 from .models import Trainer, Section, Booking 
 from datetime import date, time, datetime 
@@ -71,53 +78,67 @@ def logout_user(request):
     return redirect('authorization-page')
 
 
-
 @login_required(login_url='authorization-page')
 def home_page(request):
-    
     sections = Section.objects.all()
+    
+    
     section_id = request.GET.get('section')
+    search_query = request.GET.get('q')     
+    sort_by = request.GET.get('sort')        
+    
     active_section_id = None 
     
+    # Базовий запит - усі тренери
+    trainers = Trainer.objects.all()
+
+    
     if section_id:
-        trainers = Trainer.objects.filter(section__id=section_id)
-      
+        trainers = trainers.filter(section__id=section_id)
         try:
             active_section_id = int(section_id)
         except ValueError:
             pass 
-    else:
-        trainers = Trainer.objects.all()
+    
+   
+    if search_query:
+        trainers = trainers.filter(
+            Q(user__first_name__icontains=search_query) | 
+            Q(user__last_name__icontains=search_query) |
+            Q(section__name__icontains=search_query)
+        )
+
+   
+    if sort_by == 'price_asc':
+        trainers = trainers.order_by('price_per_session')
+    elif sort_by == 'price_desc':
+        trainers = trainers.order_by('-price_per_session')
 
     context = {
         'trainers_list': trainers,
         'sections_list': sections,
-        'active_section_id': active_section_id 
+        'active_section_id': active_section_id,
+        'search_query': search_query,
     }
     
     return render(request, 'home.html', context)
 
 
-
 @login_required(login_url='authorization-page')
 def booking_page(request, pk):
-   
     try:
         trainer = Trainer.objects.get(pk=pk)
     except Trainer.DoesNotExist:
         messages.error(request, 'Такого тренера не існує.')
         return redirect('home-page')
 
-    
     MIN_TIME = time(8, 0)  
     MAX_TIME = time(21, 0) 
 
-   
     if request.method == 'POST':
         date_str = request.POST.get('date')
         time_str = request.POST.get('time')
 
-        
         try:
             booking_date = date.fromisoformat(date_str)
             booking_time = time.fromisoformat(time_str)
@@ -129,12 +150,10 @@ def booking_page(request, pk):
             messages.error(request, 'Ви не можете обрати дату в минулому.')
             return redirect('booking_page', pk=trainer.pk)
         
-        
         if not (MIN_TIME <= booking_time <= MAX_TIME):
             messages.error(request, f'Будь ласка, оберіть час між {MIN_TIME.strftime("%H:%M")} та {MAX_TIME.strftime("%H:%M")}.')
             return redirect('booking_page', pk=trainer.pk)
 
-        
         Booking.objects.create(
             user=request.user,
             trainer=trainer,
@@ -145,15 +164,12 @@ def booking_page(request, pk):
         messages.success(request, f'Вашу заявку до {trainer.user.get_full_name()} на {booking_date.strftime("%d.%m.%Y")} о {booking_time.strftime("%H:%M")} прийнято!')
         return redirect('profile_page') 
 
-    
     else:
-       
         context = {
             'trainer': trainer,
             'today_str': date.today().isoformat()
         }
         return render(request, 'booking_form.html', context)
-
 
 
 @login_required(login_url='authorization-page')
@@ -176,3 +192,63 @@ def delete_booking(request, pk):
     booking_to_delete.delete()
     messages.success(request, 'Вашу заявку скасовано.')
     return redirect('profile_page')
+
+
+
+@login_required(login_url='authorization-page')
+def statistics_view(request):
+    
+    total_bookings = Booking.objects.count()
+
+  
+    revenue_data = Booking.objects.filter(status='confirmed').aggregate(total=Sum('trainer__price_per_session'))
+    total_revenue = revenue_data['total'] if revenue_data['total'] else 0
+
+   
+    avg_price_data = Trainer.objects.aggregate(avg=Avg('price_per_session'))
+    avg_price = round(avg_price_data['avg'], 2) if avg_price_data['avg'] else 0
+
+    
+    popular_section = Section.objects.annotate(
+        booking_count=Count('trainer__booking')
+    ).order_by('-booking_count').first()
+
+    context = {
+        'total_bookings': total_bookings,
+        'total_revenue': total_revenue,
+        'avg_price': avg_price,
+        'popular_section': popular_section,
+    }
+    
+    return render(request, 'statistics.html', context)
+@login_required(login_url='authorization-page')
+def export_bookings_pdf(request):
+    # Створюємо буфер для PDF
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=letter, bottomup=0)
+    textob = c.beginText()
+    textob.setTextOrigin(40, 40)
+    
+
+    textob.setFont("Helvetica-Bold", 14)
+    textob.textLine("FitBook: My Bookings Report")
+    
+    textob.setFont("Helvetica", 12)
+    textob.textLine("")
+
+    bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
+
+    for b in bookings:
+       
+        trainer_name = b.trainer.user.username 
+        date_str = b.booking_date.strftime("%Y-%m-%d")
+        status = b.status
+        line = f"Date: {date_str} | Trainer: {trainer_name} | Status: {status}"
+        textob.textLine(line)
+
+    c.drawText(textob)
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    
+    return FileResponse(buf, as_attachment=True, filename='my_bookings.pdf')

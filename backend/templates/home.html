@@ -92,43 +92,95 @@
                 </aside>
 
                 <section class="md:w-3/4">
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-6 flex flex-col lg:flex-row items-center justify-between gap-4">
+                        
+                        <form method="GET" action="{% url 'home-page' %}" class="flex w-full lg:w-auto gap-2">
+                            {% if active_section_id %}
+                                <input type="hidden" name="section" value="{{ active_section_id }}">
+                            {% endif %}
+                            <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Ім'я або секція..." 
+                                   class="bg-gray-700 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 w-full">
+                            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md font-medium">🔍</button>
+                            
+                            {% if search_query %}
+                                <a href="{% url 'home-page' %}" class="text-gray-400 hover:text-white self-center text-sm whitespace-nowrap">Скинути</a>
+                            {% endif %}
+                        </form>
+
+                        <div class="flex flex-col sm:flex-row gap-4 items-center w-full lg:w-auto justify-end">
+                            
+                            <div class="text-sm text-gray-300 whitespace-nowrap">
+                                <span class="mr-2 text-gray-500">Ціна:</span>
+                                <a href="?sort=price_asc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}" 
+                                   class="hover:text-orange-500 mr-2 font-medium {% if request.GET.sort == 'price_asc' %}text-orange-500{% endif %}">
+                                   ▼ Дешевші
+                                </a>
+                                <span class="text-gray-600">|</span>
+                                <a href="?sort=price_desc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}" 
+                                   class="hover:text-orange-500 ml-2 font-medium {% if request.GET.sort == 'price_desc' %}text-orange-500{% endif %}">
+                                   ▲ Дорожчі
+                                </a>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <a href="{% url 'statistics' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1">
+                                    📊 <span class="hidden sm:inline">Статистика</span>
+                                </a>
+                                <a href="{% url 'export_pdf' %}" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1">
+                                    📄 <span class="hidden sm:inline">PDF</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     <div class="space-y-6">
                         {% for trainer in trainers_list %}
-                        <div class="bg-gray-800 shadow-lg rounded-lg p-6">
+                        <div class="bg-gray-800 shadow-lg rounded-lg p-6 flex flex-col md:flex-row items-center md:items-start gap-6">
                             
-                            {% if trainer.photo %}
-                                <img src="{{ trainer.photo.url }}" 
-                                     alt="{{ trainer.user.get_full_name }}" 
-                                     class="w-32 h-32 rounded-lg mx-auto mb-4 object-cover border-4 border-orange-800">
-                            {% else %}
-                                <div class="w-32 h-32 rounded-lg mx-auto mb-4 bg-gray-700 flex items-center justify-center border-4 border-orange-800">
-                                     <span class="text-gray-400">Немає фото</span>
-                                </div>
-                            {% endif %}
+                            <div class="flex-shrink-0">
+                                {% if trainer.photo %}
+                                    <img src="{{ trainer.photo.url }}" 
+                                         alt="{{ trainer.user.get_full_name }}" 
+                                         class="w-32 h-32 rounded-lg object-cover border-4 border-orange-800 shadow-md">
+                                {% else %}
+                                    <div class="w-32 h-32 rounded-lg bg-gray-700 flex items-center justify-center border-4 border-orange-800 shadow-md">
+                                         <span class="text-gray-400 text-xs">Немає фото</span>
+                                    </div>
+                                {% endif %}
+                            </div>
 
-                            <h4 class="text-2xl font-bold text-white text-center">{{ trainer.user.get_full_name }}</h4>
-                            <p class="mt-2 text-gray-300 text-center"><strong>Анкета:</strong> {{ trainer.specialization }}</p>
-                            <p class="mt-4 text-xl font-semibold text-orange-500 text-center">{{ trainer.price_per_session }} грн / заняття</p>
-                            
-                            <div class="mt-6 text-center">
+                            <div class="flex-grow text-center md:text-left">
+                                <h4 class="text-2xl font-bold text-white">{{ trainer.user.get_full_name }}</h4>
+                                
+                                <div class="mt-2">
+                                    {% if trainer.section %}
+                                    <span class="px-3 py-1 bg-gray-700 text-gray-200 rounded-full font-medium text-xs inline-block mb-2">
+                                        #{{ trainer.section.name }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="text-gray-300 text-sm mb-3">
+                                    <strong class="text-gray-500">Спеціалізація:</strong><br> 
+                                    {{ trainer.specialization }}
+                                </p>
+                                
+                                <p class="text-xl font-bold text-orange-500">{{ trainer.price_per_session }} грн <span class="text-sm text-gray-500 font-normal">/ заняття</span></p>
+                            </div>
+
+                            <div class="mt-4 md:mt-0 flex-shrink-0 self-center">
                                 <a href="{% url 'booking_page' trainer.pk %}" 
-                                   class="px-6 py-2 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600">
+                                   class="px-6 py-3 bg-orange-500 text-white font-bold rounded-lg shadow-md hover:bg-orange-600 transition block text-center">
                                     Записатись
                                 </a>
                             </div>
 
-                            <div class="mt-4 flex flex-wrap gap-2 justify-center">
-                                {% if trainer.section %} <span class="text-gray-400 font-medium">Секція:</span>
-                                <span class="px-3 py-1 bg-gray-700 text-gray-200 rounded-full font-medium text-sm">
-                                    #{{ trainer.section.name }}
-                                </span>
-                                {% endif %}
-                            </div>
                         </div>
                         
                         {% empty %}
-                        <div class="bg-gray-800 shadow-lg rounded-lg p-6 text-center">
-                            <p class="text-gray-400">За цією секцією тренерів не знайдено, або їх ще не додали до системи.</p>
+                        <div class="bg-gray-800 shadow-lg rounded-lg p-10 text-center border border-gray-700">
+                            <p class="text-gray-400 text-lg">За вашим запитом тренерів не знайдено 😕</p>
+                            <a href="{% url 'home-page' %}" class="text-orange-500 hover:underline mt-2 inline-block">Показати всіх</a>
                         </div>
                         
                         {% endfor %} 
