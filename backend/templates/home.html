@@ -93,39 +93,58 @@
 
                 <section class="md:w-3/4">
                     
-                    <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-6 flex flex-col lg:flex-row items-center justify-between gap-4">
+                    <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-6 flex flex-col items-center justify-between gap-4">
                         
-                        <form method="GET" action="{% url 'home-page' %}" class="flex w-full lg:w-auto gap-2">
+                        <form method="GET" action="{% url 'home-page' %}" class="w-full flex flex-col lg:flex-row gap-3">
+                            
                             {% if active_section_id %}
                                 <input type="hidden" name="section" value="{{ active_section_id }}">
                             {% endif %}
-                            <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Ім'я або секція..." 
-                                   class="bg-gray-700 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 w-full">
-                            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md font-medium">🔍</button>
                             
-                            {% if search_query %}
-                                <a href="{% url 'home-page' %}" class="text-gray-400 hover:text-white self-center text-sm whitespace-nowrap">Скинути</a>
+                            <div class="flex-grow">
+                                <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Ім'я або секція..." 
+                                       class="bg-gray-700 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 w-full">
+                            </div>
+
+                            <div class="flex gap-2 items-center">
+                                <input type="number" name="min_price" value="{{ min_price|default:'' }}" placeholder="Ціна від" 
+                                       class="bg-gray-700 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 w-24">
+                                <span class="text-gray-500">-</span>
+                                <input type="number" name="max_price" value="{{ max_price|default:'' }}" placeholder="до" 
+                                       class="bg-gray-700 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 w-24">
+                            </div>
+
+                            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md font-medium">
+                                Знайти
+                            </button>
+                            
+                            {% if search_query or min_price or max_price %}
+                                <a href="{% url 'home-page' %}" class="text-gray-400 hover:text-white self-center text-sm whitespace-nowrap px-2">
+                                    Скинути
+                                </a>
                             {% endif %}
                         </form>
 
-                        <div class="flex flex-col sm:flex-row gap-4 items-center w-full lg:w-auto justify-end">
+                        <hr class="w-full border-gray-700">
+
+                        <div class="flex flex-col sm:flex-row gap-4 items-center w-full justify-between">
                             
                             <div class="text-sm text-gray-300 whitespace-nowrap">
-                                <span class="mr-2 text-gray-500">Ціна:</span>
-                                <a href="?sort=price_asc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}" 
+                                <span class="mr-2 text-gray-500">Сортувати ціну:</span>
+                                <a href="?sort=price_asc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" 
                                    class="hover:text-orange-500 mr-2 font-medium {% if request.GET.sort == 'price_asc' %}text-orange-500{% endif %}">
-                                   ▼ Дешевші
+                                    ▼ Дешевші
                                 </a>
                                 <span class="text-gray-600">|</span>
-                                <a href="?sort=price_desc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}" 
+                                <a href="?sort=price_desc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" 
                                    class="hover:text-orange-500 ml-2 font-medium {% if request.GET.sort == 'price_desc' %}text-orange-500{% endif %}">
-                                   ▲ Дорожчі
+                                    ▲ Дорожчі
                                 </a>
                             </div>
 
                             <div class="flex gap-2">
                                 <a href="{% url 'statistics' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1">
-                                    📊 <span class="hidden sm:inline">Статистика</span>
+                                     <span class="hidden sm:inline">Статистика</span>
                                 </a>
                                 <a href="{% url 'export_pdf' %}" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition flex items-center gap-1">
                                     📄 <span class="hidden sm:inline">PDF</span>
@@ -133,6 +152,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="space-y-6">
                         {% for trainer in trainers_list %}
                         <div class="bg-gray-800 shadow-lg rounded-lg p-6 flex flex-col md:flex-row items-center md:items-start gap-6">

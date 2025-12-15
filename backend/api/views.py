@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required 
-from django.db.models import Q, Count, Sum, Avg  # <--- Додано нові імпорти для статистики та пошуку
+from django.db.models import Q, Count, Sum, Avg 
 
 from .models import Trainer, Section, Booking 
 from datetime import date, time, datetime 
@@ -82,17 +82,21 @@ def logout_user(request):
 def home_page(request):
     sections = Section.objects.all()
     
-    
+    # Отримання параметрів із GET-запиту
     section_id = request.GET.get('section')
     search_query = request.GET.get('q')     
-    sort_by = request.GET.get('sort')        
+    sort_by = request.GET.get('sort')
+    
+    # --- НОВЕ: Параметри для діапазону цін ---
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
     
     active_section_id = None 
     
     # Базовий запит - усі тренери
     trainers = Trainer.objects.all()
 
-    
+    # 1. Фільтрація по секції
     if section_id:
         trainers = trainers.filter(section__id=section_id)
         try:
@@ -100,13 +104,19 @@ def home_page(request):
         except ValueError:
             pass 
     
-   
+    
     if search_query:
         trainers = trainers.filter(
             Q(user__first_name__icontains=search_query) | 
             Q(user__last_name__icontains=search_query) |
             Q(section__name__icontains=search_query)
         )
+
+    
+    if min_price:
+        trainers = trainers.filter(price_per_session__gte=min_price)
+    if max_price:
+        trainers = trainers.filter(price_per_session__lte=max_price)
 
    
     if sort_by == 'price_asc':
@@ -119,6 +129,8 @@ def home_page(request):
         'sections_list': sections,
         'active_section_id': active_section_id,
         'search_query': search_query,
+        'min_price': min_price,
+        'max_price': max_price, 
     }
     
     return render(request, 'home.html', context)
@@ -194,20 +206,14 @@ def delete_booking(request, pk):
     return redirect('profile_page')
 
 
-
 @login_required(login_url='authorization-page')
 def statistics_view(request):
-    
     total_bookings = Booking.objects.count()
-
-  
     revenue_data = Booking.objects.filter(status='confirmed').aggregate(total=Sum('trainer__price_per_session'))
     total_revenue = revenue_data['total'] if revenue_data['total'] else 0
-
-   
+    
     avg_price_data = Trainer.objects.aggregate(avg=Avg('price_per_session'))
     avg_price = round(avg_price_data['avg'], 2) if avg_price_data['avg'] else 0
-
     
     popular_section = Section.objects.annotate(
         booking_count=Count('trainer__booking')
@@ -219,17 +225,15 @@ def statistics_view(request):
         'avg_price': avg_price,
         'popular_section': popular_section,
     }
-    
     return render(request, 'statistics.html', context)
+
 @login_required(login_url='authorization-page')
 def export_bookings_pdf(request):
-    # Створюємо буфер для PDF
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=letter, bottomup=0)
     textob = c.beginText()
     textob.setTextOrigin(40, 40)
     
-
     textob.setFont("Helvetica-Bold", 14)
     textob.textLine("FitBook: My Bookings Report")
     
@@ -239,7 +243,6 @@ def export_bookings_pdf(request):
     bookings = Booking.objects.filter(user=request.user).order_by('-booking_date')
 
     for b in bookings:
-       
         trainer_name = b.trainer.user.username 
         date_str = b.booking_date.strftime("%Y-%m-%d")
         status = b.status
