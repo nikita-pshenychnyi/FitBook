@@ -11,9 +11,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required 
 from django.db.models import Q, Count, Sum, Avg 
-
-from .models import Trainer, Section, Booking 
 from datetime import date, time, datetime 
+
+
+from .models import Trainer, Section, Booking, Category 
 
 
 def authorization(request):
@@ -80,45 +81,63 @@ def logout_user(request):
 
 @login_required(login_url='authorization-page')
 def home_page(request):
-    sections = Section.objects.all()
     
-    # Отримання параметрів із GET-запиту
+    categories = Category.objects.prefetch_related('section_set').all()
+    
+    
     section_id = request.GET.get('section')
+    category_id = request.GET.get('category')  
     search_query = request.GET.get('q')     
     sort_by = request.GET.get('sort')
     
-    # --- НОВЕ: Параметри для діапазону цін ---
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     
     active_section_id = None 
+    active_category_id = None 
     
-    # Базовий запит - усі тренери
+    
     trainers = Trainer.objects.all()
 
-    # 1. Фільтрація по секції
+  
+
+    
     if section_id:
         trainers = trainers.filter(section__id=section_id)
         try:
             active_section_id = int(section_id)
+           
+            section_obj = Section.objects.filter(id=active_section_id).first()
+            if section_obj and section_obj.category:
+                active_category_id = section_obj.category.id
         except ValueError:
             pass 
     
-    
+   
+    elif category_id:
+        
+        trainers = trainers.filter(section__category__id=category_id)
+        try:
+            active_category_id = int(category_id)
+        except ValueError:
+            pass
+
+   
     if search_query:
         trainers = trainers.filter(
             Q(user__first_name__icontains=search_query) | 
             Q(user__last_name__icontains=search_query) |
-            Q(section__name__icontains=search_query)
+            Q(section__name__icontains=search_query) |
+            Q(section__category__name__icontains=search_query)
         )
 
-    
+   
     if min_price:
         trainers = trainers.filter(price_per_session__gte=min_price)
     if max_price:
         trainers = trainers.filter(price_per_session__lte=max_price)
-
    
+  
     if sort_by == 'price_asc':
         trainers = trainers.order_by('price_per_session')
     elif sort_by == 'price_desc':
@@ -126,8 +145,9 @@ def home_page(request):
 
     context = {
         'trainers_list': trainers,
-        'sections_list': sections,
+        'categories_list': categories, 
         'active_section_id': active_section_id,
+        'active_category_id': active_category_id,
         'search_query': search_query,
         'min_price': min_price,
         'max_price': max_price, 
@@ -186,23 +206,16 @@ def booking_page(request, pk):
 
 @login_required(login_url='authorization-page')
 def profile_page(request):
-    
     sort_by = request.GET.get('sort')
-    
-   
     my_bookings = Booking.objects.filter(user=request.user)
 
-   
     if sort_by == 'price_asc':
-       
         my_bookings = my_bookings.order_by('trainer__price_per_session')
     elif sort_by == 'price_desc':
-        
         my_bookings = my_bookings.order_by('-trainer__price_per_session')
     elif sort_by == 'date_old':
         my_bookings = my_bookings.order_by('created_at')
     else:
-       
         my_bookings = my_bookings.order_by('-created_at')
 
     context = { 

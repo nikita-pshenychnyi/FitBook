@@ -63,30 +63,48 @@
 
                 <aside class="md:w-1/4">
                     <div class="p-4 bg-gray-800 rounded-lg shadow-lg sticky top-6">
-                        <h3 class="text-lg font-semibold text-white mb-3">Оберіть секцію:</h3>
-                        <div class="flex flex-col space-y-2">
+                        <h3 class="text-lg font-semibold text-white mb-3">Оберіть категорію:</h3>
+                        <div class="flex flex-col space-y-4">
                             
-                            {% if active_section_id is None %}
-                                <a href="{% url 'home-page' %}" class="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600 text-center">
+                            {% if active_section_id is None and active_category_id is None %}
+                                <a href="{% url 'home-page' %}" class="w-full px-4 py-2 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600 text-center block transition">
                                     Всі секції
                                 </a>
                             {% else %}
-                                <a href="{% url 'home-page' %}" class="px-4 py-2 bg-gray-700 text-gray-200 rounded-lg font-medium text-sm hover:bg-gray-600 text-center">
+                                <a href="{% url 'home-page' %}" class="w-full px-4 py-2 bg-gray-700 text-gray-200 rounded-lg font-medium text-sm hover:bg-gray-600 text-center block transition">
                                     Всі секції
                                 </a>
                             {% endif %}
 
-                            {% for section in sections_list %}
-                                {% if active_section_id == section.id %}
-                                    <a href="?section={{ section.id }}" class="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600 text-center">
-                                        {{ section.name }}
-                                    </a>
-                                {% else %}
-                                    <a href="?section={{ section.id }}" class="px-4 py-2 bg-gray-700 text-gray-200 rounded-lg font-medium text-sm hover:bg-gray-600 text-center">
-                                        {{ section.name }}
-                                    </a>
+                            {% for category in categories_list %}
+                                
+                                {% if category.section_set.all %}
+                                    <div class="category-group">
+                                        
+                                        <a href="?category={{ category.id }}" 
+                                           class="text-xs uppercase font-bold tracking-wider mb-2 ml-1 block hover:text-orange-400 transition
+                                           {% if active_category_id == category.id %} text-orange-500 underline {% else %} text-gray-400 {% endif %}">
+                                            {{ category.name }}
+                                        </a>
+                                        
+                                        <div class="flex flex-col space-y-2 pl-2 border-l-2 {% if active_category_id == category.id %} border-orange-500 {% else %} border-gray-700 {% endif %}">
+                                            {% for section in category.section_set.all %}
+                                                {% if active_section_id == section.id %}
+                                                    <a href="?section={{ section.id }}" class="px-3 py-2 bg-gray-700 text-orange-400 rounded-r-lg font-medium text-sm border-l-4 border-orange-500 block">
+                                                        {{ section.name }}
+                                                    </a>
+                                                {% else %}
+                                                    <a href="?section={{ section.id }}" class="px-3 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-r-lg font-medium text-sm block transition-colors">
+                                                        {{ section.name }}
+                                                    </a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
                                 {% endif %}
+
                             {% endfor %}
+
                         </div>
                     </div>
                 </aside>
@@ -99,6 +117,10 @@
                             
                             {% if active_section_id %}
                                 <input type="hidden" name="section" value="{{ active_section_id }}">
+                            {% endif %}
+                            
+                            {% if active_category_id and not active_section_id %}
+                                <input type="hidden" name="category" value="{{ active_category_id }}">
                             {% endif %}
                             
                             <div class="flex-grow">
@@ -131,12 +153,12 @@
                             
                             <div class="text-sm text-gray-300 whitespace-nowrap">
                                 <span class="mr-2 text-gray-500">Сортувати ціну:</span>
-                                <a href="?sort=price_asc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" 
+                                <a href="?sort=price_asc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% elif active_category_id %}&category={{ active_category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" 
                                    class="hover:text-orange-500 mr-2 font-medium {% if request.GET.sort == 'price_asc' %}text-orange-500{% endif %}">
                                     ▼ Дешевші
                                 </a>
                                 <span class="text-gray-600">|</span>
-                                <a href="?sort=price_desc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" 
+                                <a href="?sort=price_desc{% if search_query %}&q={{ search_query }}{% endif %}{% if active_section_id %}&section={{ active_section_id }}{% elif active_category_id %}&category={{ active_category_id }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" 
                                    class="hover:text-orange-500 ml-2 font-medium {% if request.GET.sort == 'price_desc' %}text-orange-500{% endif %}">
                                     ▲ Дорожчі
                                 </a>
