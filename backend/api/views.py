@@ -186,8 +186,29 @@ def booking_page(request, pk):
 
 @login_required(login_url='authorization-page')
 def profile_page(request):
-    my_bookings = Booking.objects.filter(user=request.user).order_by('-created_at')
-    context = { 'bookings': my_bookings }
+    
+    sort_by = request.GET.get('sort')
+    
+   
+    my_bookings = Booking.objects.filter(user=request.user)
+
+   
+    if sort_by == 'price_asc':
+       
+        my_bookings = my_bookings.order_by('trainer__price_per_session')
+    elif sort_by == 'price_desc':
+        
+        my_bookings = my_bookings.order_by('-trainer__price_per_session')
+    elif sort_by == 'date_old':
+        my_bookings = my_bookings.order_by('created_at')
+    else:
+       
+        my_bookings = my_bookings.order_by('-created_at')
+
+    context = { 
+        'bookings': my_bookings,
+        'current_sort': sort_by 
+    }
     return render(request, 'profile.html', context)
 
 
