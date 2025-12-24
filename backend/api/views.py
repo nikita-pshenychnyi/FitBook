@@ -84,7 +84,6 @@ def home_page(request):
     
     categories = Category.objects.prefetch_related('section_set').all()
     
-    
     section_id = request.GET.get('section')
     category_id = request.GET.get('category')  
     search_query = request.GET.get('q')     
@@ -96,24 +95,19 @@ def home_page(request):
     active_section_id = None 
     active_category_id = None 
     
-    
     trainers = Trainer.objects.all()
 
-  
-
-    
     if section_id:
         trainers = trainers.filter(section__id=section_id)
         try:
             active_section_id = int(section_id)
-           
+            
             section_obj = Section.objects.filter(id=active_section_id).first()
             if section_obj and section_obj.category:
                 active_category_id = section_obj.category.id
         except ValueError:
             pass 
     
-   
     elif category_id:
         
         trainers = trainers.filter(section__category__id=category_id)
@@ -122,7 +116,6 @@ def home_page(request):
         except ValueError:
             pass
 
-   
     if search_query:
         trainers = trainers.filter(
             Q(user__first_name__icontains=search_query) | 
@@ -131,13 +124,11 @@ def home_page(request):
             Q(section__category__name__icontains=search_query)
         )
 
-   
     if min_price:
         trainers = trainers.filter(price_per_session__gte=min_price)
     if max_price:
         trainers = trainers.filter(price_per_session__lte=max_price)
    
-  
     if sort_by == 'price_asc':
         trainers = trainers.order_by('price_per_session')
     elif sort_by == 'price_desc':
@@ -170,6 +161,7 @@ def booking_page(request, pk):
     if request.method == 'POST':
         date_str = request.POST.get('date')
         time_str = request.POST.get('time')
+        comment_text = request.POST.get('comment') # <-- ОТРИМУЄМО КОМЕНТАР
 
         try:
             booking_date = date.fromisoformat(date_str)
@@ -191,6 +183,7 @@ def booking_page(request, pk):
             trainer=trainer,
             booking_date=booking_date,
             booking_time=booking_time,
+            comment=comment_text, # <-- ЗБЕРІГАЄМО КОМЕНТАР
             status='pending' 
         )
         messages.success(request, f'Вашу заявку до {trainer.user.get_full_name()} на {booking_date.strftime("%d.%m.%Y")} о {booking_time.strftime("%H:%M")} прийнято!')
